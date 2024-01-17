@@ -1,7 +1,11 @@
 {
   "name": "saml/test",
   "require": {
-    "onelogin/php-saml": "^4.1"
+    "onelogin/php-saml": "^4.1",
+    "symfony/http-foundation": "^6.4",
+    "symfony/routing": "^6.4",
+    "symfony/http-kernel": "^6.4",
+    "twig/twig": "^3.8"
   },
   "autoload": {
     "psr-4": {
