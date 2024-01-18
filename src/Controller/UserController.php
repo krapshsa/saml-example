@@ -1,10 +1,11 @@
 <?php
 
-namespace App;
+namespace App\Controller;
 
+use App\UserBackend;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Twig\Environment;
 
 class UserController

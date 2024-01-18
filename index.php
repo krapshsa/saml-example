@@ -3,9 +3,9 @@
 require_once './vendor/autoload.php';
 
 use App\Config;
-use App\SAMLController;
+use App\Controller\SAMLController;
+use App\Controller\UserController;
 use App\UserBackend;
-use App\UserController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;

@@ -1,7 +1,8 @@
 <?php
 
-namespace App;
+namespace App\Controller;
 
+use App\Config;
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\AuthnRequest;
 use OneLogin\Saml2\Settings;
