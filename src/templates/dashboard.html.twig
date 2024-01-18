@@ -3,43 +3,100 @@
 <head>
     <title>Dashboard</title>
     <style>
-
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #fafafa;
         }
 
         h1 {
             color: #333;
-            float: left;
         }
 
-        a#logout {
+        #logout {
             display: inline-block;
             padding: 10px;
-            background-color: #f0f0f0;
-            color: #000;
+            background-color: #1a73e8;
+            color: #fff;
             text-decoration: none;
             margin-bottom: 20px;
             float: right;
-            clear: both;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            clear: both;
-        }
-
-        thead {
-            background-color: #f0f0f0;
+        table,form {
+            background-color: #fff;
+            box-shadow: 1px 1px 15px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 20px;
         }
 
         th, td {
             padding: 15px;
             border: 1px solid #ddd;
+            text-align: left;
         }
 
+        input[type="submit"] {
+            background-color: #1a73e8;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0046c3;
+        }
+
+        input[type="text"] {
+            margin-bottom: 15px;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
     </style>
+    <script>
+        window.onload = function () {
+            fetch('/get-saml')
+                .then(response => response.json())
+                .then(data => {
+                    // Populate Settings Form
+                    document.getElementById('sspEntityID').value = data.sp.entityId;
+                    document.getElementById('acsURL').value = data.sp.assertionConsumerService.url;
+                    document.getElementById('idpEntityID').value = data.idp.entityId;
+                    document.getElementById('singleSignOnService').value = data.idp.singleSignOnService.url;
+                    document.getElementById('x509cert').value = data.idp.x509cert;
+                    document.getElementById('libDebug').checked = data.debug;
+                    document.getElementById('libStrict').checked = data.strict;
+                });
+        };
+
+        function updateSettings() {
+            let updatedSettings = {
+                sp: {
+                    entityId: document.getElementById('sspEntityID').value,
+                    assertionConsumerService: {
+                        url: document.getElementById('acsURL').value
+                    }
+                },
+                idp: {
+                    entityId: document.getElementById('idpEntityID').value
+                    // ... add other fields here
+                }
+            };
+
+            fetch('/set-saml', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedSettings)
+            });
+        }
+    </script>
 </head>
 <body>
 <h1>Welcome, {{ session['user'] ?? 'N/A' }}!</h1>
@@ -58,5 +115,32 @@
     </tr>
     </tbody>
 </table>
+
+<h2>SAML Info:</h2>
+<form id="settingsForm" onsubmit="event.preventDefault(); updateSettings();">
+    <label for="sspEntityID">SP Entity ID:</label>
+    <input type="text" id="sspEntityID" name="sspEntityID">
+
+    <label for="acsURL">ACS URL:</label>
+    <input type="text" id="acsURL" name="acsURL">
+
+    <label for="idpEntityID">IdP Entity ID:</label>
+    <input type="text" id="idpEntityID" name="idpEntityID">
+
+    <label for="singleSignOnService">Single Sign-On Service url:</label>
+    <input type="text" id="singleSignOnService" name="singleSignOnService">
+
+    <label for="x509cert">x509 cert</label>
+    <input type="text" id="x509cert" name="x509cert">
+
+    <label for="libDebug">debug</label>
+    <input type="checkbox" id="libDebug" name="libDebug">
+
+    <label for="libStrict">strict mode</label>
+    <input type="checkbox" id="libStrict" name="libStrict">
+
+    <input type="submit" value="Update Settings">
+</form>
+
 </body>
 </html>

@@ -4,6 +4,7 @@ require_once './vendor/autoload.php';
 
 use App\Config;
 use App\Controller\SAMLController;
+use App\Controller\SettingsController;
 use App\Controller\UserController;
 use App\UserBackend;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,13 +38,14 @@ function initTemplateEngine(): Environment
 
 function initRoute(): RouteCollection
 {
-    $session        = initSession();
-    $twig           = initTemplateEngine();
-    $routes         = new RouteCollection();
-    $config         = new Config('./settings.json');
-    $userBackend    = new UserBackend();
-    $SAMLController = new SAMLController($config, $session, $userBackend);
-    $userController = new UserController($twig, $session, $userBackend);
+    $session            = initSession();
+    $twig               = initTemplateEngine();
+    $routes             = new RouteCollection();
+    $config             = new Config('./settings.json');
+    $userBackend        = new UserBackend();
+    $SAMLController     = new SAMLController($config, $session, $userBackend);
+    $userController     = new UserController($twig, $session, $userBackend);
+    $settingsController = new SettingsController($config);
 
 
     $routes->add('default-page', new Route('/', [
@@ -66,6 +68,12 @@ function initRoute(): RouteCollection
     ]));
     $routes->add('saml-acs-idp', new Route('/acs-idp', [
         '_controller' => [$SAMLController, 'handleIDPInitResponse']
+    ]));
+    $routes->add('set-saml', new Route('/set-saml', [
+        '_controller' => [$settingsController, 'setSAML']
+    ]));
+    $routes->add('get-saml', new Route('/get-saml', [
+        '_controller' => [$settingsController, 'getSAML']
     ]));
 
     return $routes;
