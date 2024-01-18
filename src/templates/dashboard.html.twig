@@ -32,6 +32,37 @@
             padding: 20px;
         }
 
+        .form-group {
+            display: grid;
+            grid-template-columns: 1fr 5fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            justify-self: start;
+            align-self: center;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group input[type="checkbox"] {
+            justify-self: start;
+            align-self: center;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+        }
+
+        .form-group textarea {
+            min-height: 240px;
+            height: 100%;
+            resize: vertical;
+        }
+
         th, td {
             padding: 15px;
             border: 1px solid #ddd;
@@ -50,97 +81,101 @@
         input[type="submit"]:hover {
             background-color: #0046c3;
         }
-
-        input[type="text"] {
-            margin-bottom: 15px;
-            padding: 10px;
-            width: 100%;
-            box-sizing: border-box;
-        }
     </style>
-    <script>
-        window.onload = function () {
-            fetch('/get-saml')
-                .then(response => response.json())
-                .then(data => {
-                    // Populate Settings Form
-                    document.getElementById('sspEntityID').value = data.sp.entityId;
-                    document.getElementById('acsURL').value = data.sp.assertionConsumerService.url;
-                    document.getElementById('idpEntityID').value = data.idp.entityId;
-                    document.getElementById('singleSignOnService').value = data.idp.singleSignOnService.url;
-                    document.getElementById('x509cert').value = data.idp.x509cert;
-                    document.getElementById('libDebug').checked = data.debug;
-                    document.getElementById('libStrict').checked = data.strict;
-                });
-        };
-
-        function updateSettings() {
-            let updatedSettings = {
-                sp: {
-                    entityId: document.getElementById('sspEntityID').value,
-                    assertionConsumerService: {
-                        url: document.getElementById('acsURL').value
-                    }
-                },
-                idp: {
-                    entityId: document.getElementById('idpEntityID').value
-                    // ... add other fields here
-                }
-            };
-
-            fetch('/set-saml', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updatedSettings)
-            });
-        }
-    </script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
-<h1>Welcome, {{ session['user'] ?? 'N/A' }}!</h1>
-<a id="logout" href="/logout">Logout</a>
-<table>
-    <thead>
-    <tr>
-        <th>Session User</th>
-        <th>Session CSRF</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td>{{ session['user'] ?? 'N/A' }}</td>
-        <td>{{ session['csrf'] ?? 'N/A' }}</td>
-    </tr>
-    </tbody>
-</table>
+<div id="app">
+    <h1>Welcome, {{ session['user'] }}!</h1>
+    <a id="logout" href="/logout">Logout</a>
+    <table>
+        <thead>
+        <tr>
+            <th>Session User</th>
+            <th>Session CSRF</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{{ session['user'] }}</td>
+            <td>{{ session['csrf'] }}</td>
+        </tr>
+        </tbody>
+    </table>
 
-<h2>SAML Info:</h2>
-<form id="settingsForm" onsubmit="event.preventDefault(); updateSettings();">
-    <label for="sspEntityID">SP Entity ID:</label>
-    <input type="text" id="sspEntityID" name="sspEntityID">
+    <h2>SAML Info:</h2>
+    <form id="settingsForm" @submit.prevent="updateSettings">
+        <h3>SP Info</h3>
+        <div class="form-group">
+            <label for="sspEntityID">SP Entity ID</label>
+            <input type="text" id="sspEntityID" v-model="samlSettings.sp.entityId">
+        </div>
 
-    <label for="acsURL">ACS URL:</label>
-    <input type="text" id="acsURL" name="acsURL">
+        <div class="form-group">
+            <label for="acsURL">ACS URL</label>
+            <input type="text" id="acsURL" v-model="samlSettings.sp.assertionConsumerService.url">
+        </div>
 
-    <label for="idpEntityID">IdP Entity ID:</label>
-    <input type="text" id="idpEntityID" name="idpEntityID">
+        <h3>IdP Info</h3>
+        <div class="form-group">
+            <label for="ssoURL">SSO URL</label>
+            <input type="text" id="ssoURL" v-model="samlSettings.idp.singleSignOnService.url">
+        </div>
 
-    <label for="singleSignOnService">Single Sign-On Service url:</label>
-    <input type="text" id="singleSignOnService" name="singleSignOnService">
+        <div class="form-group">
+            <label for="x509cert">x509 cert</label>
+            <textarea id="x509cert" v-model="samlSettings.idp.x509cert"></textarea>
+        </div>
 
-    <label for="x509cert">x509 cert</label>
-    <input type="text" id="x509cert" name="x509cert">
+        <div class="form-group">
+            <label for="libDebug">debug</label>
+            <input type="checkbox" id="libDebug" v-model="samlSettings.debug">
+        </div>
 
-    <label for="libDebug">debug</label>
-    <input type="checkbox" id="libDebug" name="libDebug">
+        <div class="form-group">
+            <label for="libStrict">strict mode</label>
+            <input type="checkbox" id="libStrict" v-model="samlSettings.strict">
+        </div>
 
-    <label for="libStrict">strict mode</label>
-    <input type="checkbox" id="libStrict" name="libStrict">
+        <input type="submit" value="Update Settings">
+    </form>
+</div>
 
-    <input type="submit" value="Update Settings">
-</form>
+<script>
+    const { createApp, ref } = Vue;
 
+    createApp({
+        setup() {
+            const samlSettings = ref({
+                sp: { entityId: '', assertionConsumerService: { url: '' } },
+                idp: { entityId: '', singleSignOnService: { url: '' }, x509cert: '' },
+                debug: false,
+                strict: false
+            });
+
+            function fetchSamlSettings() {
+                fetch('/get-saml')
+                    .then(response => response.json())
+                    .then(data => {
+                        samlSettings.value = data;
+                    });
+            }
+
+            function updateSettings() {
+                fetch('/set-saml', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(samlSettings.value)
+                });
+            }
+
+            fetchSamlSettings();
+
+            return { samlSettings, updateSettings };
+        }
+    }).mount('#app');
+</script>
 </body>
 </html>
