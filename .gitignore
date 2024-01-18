@@ -1,0 +1,6 @@
+.idea
+data
+session
+vendor/**/*
+!vendor/autoload.php
+composer.lock
