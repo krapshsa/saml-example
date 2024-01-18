@@ -2,8 +2,61 @@
 <html>
 <head>
     <title>Dashboard</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #333;
+            float: left;
+        }
+
+        a#logout {
+            display: inline-block;
+            padding: 10px;
+            background-color: #f0f0f0;
+            color: #000;
+            text-decoration: none;
+            margin-bottom: 20px;
+            float: right;
+            clear: both;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            clear: both;
+        }
+
+        thead {
+            background-color: #f0f0f0;
+        }
+
+        th, td {
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+
+    </style>
 </head>
 <body>
-<h1>Welcome, {{ currentUser }}!</h1>
+<h1>Welcome, {{ session['user'] ?? 'N/A' }}!</h1>
+<a id="logout" href="/logout">Logout</a>
+<table>
+    <thead>
+    <tr>
+        <th>Session User</th>
+        <th>Session CSRF</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{ session['user'] ?? 'N/A' }}</td>
+        <td>{{ session['csrf'] ?? 'N/A' }}</td>
+    </tr>
+    </tbody>
+</table>
 </body>
 </html>

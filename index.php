@@ -42,7 +42,7 @@ function initRoute(): RouteCollection
     $routes         = new RouteCollection();
     $config         = new Config('./settings.json');
     $userBackend    = new UserBackend();
-    $SAMLController = new SAMLController($config);
+    $SAMLController = new SAMLController($config, $session, $userBackend);
     $userController = new UserController($twig, $session, $userBackend);
 
 
@@ -51,6 +51,9 @@ function initRoute(): RouteCollection
     ]));
     $routes->add('login-api', new Route('/login', [
         '_controller' => [$userController, 'login']
+    ]));
+    $routes->add('logout-api', new Route('/logout', [
+        '_controller' => [$userController, 'logout']
     ]));
     $routes->add('dashboard', new Route('/dashboard', [
         '_controller' => [$userController, 'dashboard']
@@ -61,8 +64,8 @@ function initRoute(): RouteCollection
     $routes->add('saml-acs', new Route('/acs', [
         '_controller' => [$SAMLController, 'handleSPInitResponse']
     ]));
-    $routes->add('saml-acs', new Route('/acs-idp', [
-        '_controller' => [$SAMLController, 'handleSPInitResponse']
+    $routes->add('saml-acs-idp', new Route('/acs-idp', [
+        '_controller' => [$SAMLController, 'handleIDPInitResponse']
     ]));
 
     return $routes;

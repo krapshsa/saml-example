@@ -9,9 +9,14 @@ class UserBackend
         'user001' => 'password'
     ];
 
+    public function userExists(string $username): bool
+    {
+        return array_key_exists($username, $this->users);
+    }
+
     public function checkPassword(string $username, string $password): bool
     {
-        if (!array_key_exists($username, $this->users)) {
+        if (!$this->userExists($username)) {
             return false;
         }
 

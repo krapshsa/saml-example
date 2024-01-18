@@ -24,7 +24,7 @@ class UserController
     public function defaultPage(): Response
     {
         if (!empty($this->session->get('user'))) {
-            return new redirectResponse('/dashboard');
+            return new RedirectResponse('/dashboard');
         }
 
         return new Response($this->twig->render('login.html.twig', [
@@ -37,25 +37,35 @@ class UserController
         $username = filter_input(INPUT_POST, 'username');
         $password = filter_input(INPUT_POST, 'password');
 
+        if ($this->session->has('errmsg')) {
+            $this->session->remove('errmsg');
+        }
+
         $result = $this->userBackend->checkPassword($username, $password);
 
         if ($result) {
             $this->session->set('user', $username);
-            return new redirectResponse('/dashboard');
+            return new RedirectResponse('/dashboard');
         } else {
             $this->session->set('errmsg', 'Invalid credentials');
-            return new redirectResponse('/');
+            return new RedirectResponse('/');
         }
+    }
+
+    public function logout(): Response
+    {
+        $this->session->clear();
+        return new RedirectResponse('/');
     }
 
     public function dashboard(): Response
     {
         if(empty($this->session->get('user'))) {
-            return new redirectResponse('/');
+            return new RedirectResponse('/');
         }
 
         return new Response($this->twig->render('dashboard.html.twig', [
-            'currentUser' => $this->session->get('user')
+            'session' => $this->session->all(),
         ]));
     }
 }

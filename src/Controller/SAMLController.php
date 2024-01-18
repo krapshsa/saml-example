@@ -3,20 +3,26 @@
 namespace App\Controller;
 
 use App\Config;
+use App\UserBackend;
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\AuthnRequest;
 use OneLogin\Saml2\Settings;
 use OneLogin\Saml2\Utils;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 class SAMLController
 {
     private array $settingsInfo;
+    private Session $session;
+    private UserBackend $userBackend;
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, Session $session, UserBackend $userBackend)
     {
+        $this->session      = $session;
         $this->settingsInfo = $config->get('saml');
+        $this->userBackend  = $userBackend;
     }
 
     public function sendAuthnRequest(): Response
@@ -67,9 +73,13 @@ class SAMLController
             $sessionIndex = $auth->getSessionIndex();
 
             // Do something with the user data, like registering or updating the user in your database
-            // ...
-
-            return new RedirectResponse('/dashboard');
+            if ($this->userBackend->userExists($nameId)) {
+                $this->session->set('user', $nameId);
+                return new RedirectResponse('/dashboard');
+            } else {
+                $this->session->set('errmsg', "cannot login with SAML user $nameId, user not exists in backend.");
+                return new RedirectResponse('/');
+            }
         } catch (\Exception $e) {
             return new Response($e->getMessage());
         }
@@ -100,9 +110,13 @@ class SAMLController
             $sessionIndex = $auth->getSessionIndex();
 
             // Do something with the user data, like registering or updating the user in your database
-            // ...
-
-            return new RedirectResponse('/dashboard');
+            if ($this->userBackend->userExists($nameId)) {
+                $this->session->set('user', $nameId);
+                return new RedirectResponse('/dashboard');
+            } else {
+                $this->session->set('errmsg', "cannot login with SAML user $nameId, user not exists in backend.");
+                return new RedirectResponse('/');
+            }
         } catch (\Exception $e) {
             return new Response($e->getMessage());
         }
